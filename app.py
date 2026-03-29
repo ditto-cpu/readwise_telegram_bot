@@ -1,4 +1,4 @@
-import logging, os, threading
+import logging, os, threading, time
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from telegram import *
 from telegram.ext import *
@@ -87,7 +87,9 @@ async def cancel(update: Update, context: CallbackContext):
     return ConversationHandler.END
 
 if __name__ == '__main__':
-    threading.Thread(target=run_health_server, daemon=True).start()
+    health_thread = threading.Thread(target=run_health_server, daemon=True)
+    health_thread.start()
+    time.sleep(2)
 
     application = ApplicationBuilder().token(BOT_TOKEN).build()
 
@@ -99,4 +101,5 @@ if __name__ == '__main__':
 
     application.add_handler(conv_handler_reader)
     application.add_handler(CommandHandler('start', start))
-    application.add_handler(MessageHandler((filters.TEXT | filters.ATTACHMENT | filters.PHOTO) & ~filters.COM
+    application.add_handler(MessageHandler((filters.TEXT | filters.ATTACHMENT | filters.PHOTO) & ~filters.COMMAND, send_to_readwise))
+    application.run_polling()
